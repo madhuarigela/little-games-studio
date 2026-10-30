@@ -58,3 +58,10 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Run 41054374698:** Failed compilation because newly assigned accessibility action IDs collided. Assigned unique IDs and pushed the correction.
 - **Run 41054618157:** JVM unit tests PASS, including purchase signature tests; APK/AAB assembly PASS; emulator instrumentation IN PROGRESS at the latest check. Do not report the full run green until that step completes.
 
+
+
+## 2026-10-30 — AdMob configuration guard
+- **Change:** Added strict format validation for the AdMob application ID and both ad-unit IDs. UMP consent requests and SDK initialization now remain disabled unless all three identifiers are valid; official Google test IDs remain accepted in debug builds.
+- **Reason:** Previously the code checked only ad-unit IDs. A configured unit ID paired with the default placeholder app ID could allow SDK startup with an invalid manifest app ID.
+- **Tests added:** valid official test IDs, placeholder app ID, placeholder/malformed unit IDs, and null values.
+- **Verification:** CI triggered by these commits; JVM, APK/AAB, and emulator results are PENDING.
