@@ -1,0 +1,37 @@
+name: Android build
+
+on:
+  push:
+    paths:
+      - 'apps/star-sprout-sprint/**'
+      - '.github/workflows/android.yml'
+  pull_request:
+    paths:
+      - 'apps/star-sprout-sprint/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build test APK and Play bundle
+        run: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:assembleDebug :app:bundleRelease
+      - name: Save build outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: star-sprout-sprint-build
+          path: |
+            apps/star-sprout-sprint/app/build/outputs/apk/debug/*.apk
+            apps/star-sprout-sprint/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
