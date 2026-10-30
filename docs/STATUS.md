@@ -29,7 +29,7 @@ Last updated: 2026-10-30
 - Build outputs: workflow artifact `star-sprout-sprint-build` (debug APK + unsigned release AAB).
 - Current config: compile SDK 37, target SDK 36, min SDK 24, version 1 / 1.0.0.
 - Latest CI run 41050606144: PASS — four JVM unit tests, debug APK, unsigned release AAB, emulator instrumentation, and artifact upload. Artifact ID `12975146658`.
-- Monetization build run 41054618157: JVM tests and APK/AAB assembly PASS; emulator test is IN PROGRESS. It includes the RSA purchase-signature unit tests.
+- Monetization build run 41054618157: JVM tests and APK/AAB assembly PASS; emulator test was IN PROGRESS at last check. A follow-up configuration-hardening commit is now triggering CI; verify its run before treating it as green.
 - Earlier diagnostic run 41048622797 failed only because the test passed a null accessibility label to `contentEquals`; fixed and verified in 41050606144.
 - Physical device, 60 fps, low-memory, battery, AdMob fill, Billing, Play Console, signing, privacy URL: NOT VERIFIED.
 
