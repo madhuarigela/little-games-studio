@@ -53,6 +53,8 @@ android {
     buildTypes {
         debug {
             manifestPlaceholders = [admobAppId: debugAdAppId]
+            buildConfigField 'String', 'ADMOB_APP_ID', "\"${debugAdAppId}\""
+            buildConfigField 'String', 'ADMOB_APP_ID', "\"${releaseAdAppId}\""
             buildConfigField 'String', 'ADMOB_REWARDED_UNIT_ID', "\"${debugRewardedId}\""
             buildConfigField 'String', 'ADMOB_INTERSTITIAL_UNIT_ID', "\"${debugInterstitialId}\""
             buildConfigField 'String', 'PLAY_LICENSE_PUBLIC_KEY', "\"${billingPublicKey}\""
