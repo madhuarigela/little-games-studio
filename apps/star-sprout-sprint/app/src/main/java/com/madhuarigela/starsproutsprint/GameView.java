@@ -32,8 +32,9 @@ final class GameView extends View {
             A_OUTFIT0 = 0x0000210f, A_OUTFIT1 = 0x00002110,
             A_OUTFIT2 = 0x00002111, A_OUTFIT3 = 0x00002112,
             A_SOUND = 0x00002113, A_TUTORIAL = 0x00002114,
-            A_PRIVACY = 0x00002115, A_HAPTICS = 0x00002116, A_SHOP = 0x00002117,
-            A_SHOP_HOME = 0x00002118, A_PRIVACY_OPTIONS = 0x00002119;
+            A_PRIVACY = 0x00002115, A_HAPTICS = 0x00002116,
+            A_SHOP_HOME = 0x00002117, A_PRIVACY_OPTIONS = 0x00002118,
+            A_SHOP = 0x00002120;
     private int lastA11yScreen = -1;
     private static final String[] WORLD_NAMES = {"Cloud Meadow", "Sunset Orchard", "Crystal Grove"};
     private static final String[] OUTFIT_NAMES = {"Sprout", "Sunbeam", "Berry", "Starlight"};
