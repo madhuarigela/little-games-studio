@@ -16,3 +16,9 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Reproduction:** Push workflow using `secrets.*` directly in step `if` expressions; Actions reported a failed run with no jobs.
 - **Cause/fix:** GitHub does not allow secret context in `if`. Replaced with a dedicated step that emits a boolean output without printing the secret; conditional steps now use that output.
 - **Verification:** Pending new CI run.
+
+## 2026-10-30 — instrumentation runner stalled
+- **Severity:** P2 (instrumented verification does not finish in expected CI window).
+- **Observed:** Run 41029101220 passed JVM tests and artifact assembly but remained in the emulator-test step for over 12 minutes; the GitHub run-log endpoint did not expose live output while it was active. Root cause is NOT VERIFIED.
+- **Mitigation:** Stop scheduling continuous Canvas redraws on static screens (active run remains frame-driven), which reduces idle battery use and lets UI automation settle. Set explicit emulator launch flags, disable emulator animations, and add a finite job timeout.
+- **Verification:** Pending a subsequent CI run.

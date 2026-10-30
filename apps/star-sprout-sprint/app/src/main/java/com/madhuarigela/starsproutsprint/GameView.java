@@ -90,7 +90,8 @@ final class GameView extends View {
         }
         if (outfitToastFrames > 0) { outfitToastFrames--; drawToast(canvas, h, toast); }
         canvas.restore();
-        if (!appPaused) postInvalidateOnAnimation();
+        // Animate only during an active run. Static menus should go idle to save battery and let UI automation settle.
+        if (!appPaused && screen == RUN) postInvalidateOnAnimation();
     }
 
     private void update(float dt) {

@@ -18,6 +18,7 @@ permissions:
 
 jobs:
   build-and-test:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -59,6 +60,8 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_2
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           script: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:connectedDebugAndroidTest
       - name: Save build outputs and test reports
         uses: actions/upload-artifact@v4
