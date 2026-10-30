@@ -11,13 +11,13 @@ Last updated: 2026-10-30
 | Stage | State | Notes |
 |---|---|---|
 | 0 Audit | DONE | GitHub Actions run 41024997190 green; debug APK and unsigned AAB artifact uploaded. |
-| 1 Product spec | IN PROGRESS | Draft in `docs/play-store/product-spec.md`. |
-| 2 UX | IN PROGRESS | Draft screen flow and text wireframes in `docs/play-store/ux-spec.md`. |
-| 3 Architecture | IN PROGRESS | Existing app is Java/Canvas; architecture and migration notes in `docs/play-store/architecture.md`. |
-| 4 Gameplay | IN PROGRESS | Playable offline prototype exists. 60 fps target not measured. |
-| 5 Polish | IN PROGRESS | Original Canvas art and synthesized audio exist; art/audio review and device checks NOT VERIFIED. |
+| 1 Product spec | DONE | Spec and monetization/risk plan in `docs/play-store/product-spec.md`. |
+| 2 UX | DONE | Flow, wireframes, and accessibility rules drafted in `docs/play-store/ux-spec.md`; UI changes continue in implementation. |
+| 3 Architecture | DONE (design only) | Architecture and migration notes in `docs/play-store/architecture.md`; Java/Canvas migration mismatch remains open. |
+| 4 Gameplay | IN PROGRESS | Playable offline prototype, bounds-safe save/economy helpers; active-run frame pacing only. 60 fps target NOT VERIFIED. |
+| 5 Polish | IN PROGRESS | Original Canvas character, environments, generated audio; accessible screen actions and haptics added locally, pending CI. Device review NOT VERIFIED. |
 | 6 Monetization | NOT STARTED | Requires ad/billing integration, consent review, and purchase test. |
-| 7 QA | IN PROGRESS | CI build passed; automated unit/instrumented tests are not yet configured or run. |
+| 7 QA | IN PROGRESS | Four JVM unit tests and one emulator instrumentation launch test passed in run 41030690734. Gameplay/device QA remains NOT VERIFIED. |
 | 8 Security + compliance | IN PROGRESS | Draft privacy and disclosure materials; must be updated after SDK integration and verified in Console. |
 | 9 Release engineering | IN PROGRESS | CI emits debug APK and unsigned AAB. Conditional signing workflow and secrets instructions remain. |
 | 10 Store pack | DRAFT | Listing, graphics specs, test plan are in `docs/play-store/`. |

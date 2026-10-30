@@ -27,3 +27,5 @@ Record device model, Android version, app version, date, tester, and pass/fail f
 - [ ] Airplane mode/no network: core game remains playable.
 - [ ] Ad failure/no fill and billing unavailable never block gameplay (after integration).
 - [ ] Test purchase/cancel/restore/refund and purchase acknowledgment (after billing integration).
+- [ ] Haptics toggle persists; disabled haptics produce no game vibration.
+- [ ] TalkBack exposes screen-specific actions for the current screen, and activating each action has the same effect as its touch control.

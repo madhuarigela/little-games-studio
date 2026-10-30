@@ -28,3 +28,13 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Observed:** Run 41030690734 passed JVM tests and bundle assembly but remained at the emulator step. Root cause remains NOT VERIFIED.
 - **Mitigation:** App has no Google Play Services dependency, so changed API 35 test image from `google_apis` to standard `default` image to reduce setup work. Prior static-redraw mitigation remains.
 - **Verification:** Pending third CI run.
+
+## 2026-10-30 — automated QA baseline green
+- **Run:** 41030690734 (commit `d61bd821dbcdc0f123b595450353e1f347755d5f`).
+- **Result:** PASS — four JVM unit tests, debug APK and release AAB assembly, emulator instrumentation launch/accessibility-action test, artifact upload.
+- **Note:** Signing secrets were absent, so the release AAB is unsigned. No device QA was performed.
+
+## 2026-10-30 — accessibility and haptics improvements
+- **Changes:** Custom screen-reader actions for home, run, pause, results, world/outfit selection, and settings; dynamic screen descriptions; system haptics with an in-game toggle; Back now invalidates static screens correctly.
+- **Self-review:** No new permission or network behavior. Haptics can be disabled. Canvas control hit targets still require physical-device measurements and TalkBack verification.
+- **Verification:** Pending CI after commit.

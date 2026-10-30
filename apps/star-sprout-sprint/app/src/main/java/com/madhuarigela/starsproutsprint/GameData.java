@@ -17,9 +17,11 @@ final class GameData {
     int world() { return clamp(prefs.getInt("world", 0), 0, WORLD_COUNT - 1); }
     int outfit() { return clamp(prefs.getInt("outfit", 0), 0, OUTFIT_COUNT - 1); }
     boolean soundOn() { return prefs.getBoolean("sound_on", true); }
+    boolean hapticsOn() { return prefs.getBoolean("haptics_on", true); }
     boolean tutorialSeen() { return prefs.getBoolean("tutorial_seen", false); }
 
     void setSoundOn(boolean value) { prefs.edit().putBoolean("sound_on", value).apply(); }
+    void setHapticsOn(boolean value) { prefs.edit().putBoolean("haptics_on", value).apply(); }
     void setTutorialSeen() { prefs.edit().putBoolean("tutorial_seen", true).apply(); }
     void selectWorld(int value) {
         if (value >= 0 && value < WORLD_COUNT) prefs.edit().putInt("world", value).apply();

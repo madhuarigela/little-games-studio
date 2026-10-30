@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -19,6 +20,12 @@ public final class MainActivityInstrumentedTest {
                 View game = ((android.view.ViewGroup) content).getChildAt(0);
                 assertNotNull(game);
                 assertTrue(game.getContentDescription().toString().contains("Swipe sideways"));
+                AccessibilityNodeInfo node = game.createAccessibilityNodeInfo();
+                boolean hasPlayAction = false;
+                for (AccessibilityNodeInfo.AccessibilityAction action : node.getActionList()) {
+                    if ("Play".contentEquals(action.getLabel())) hasPlayAction = true;
+                }
+                assertTrue(hasPlayAction);
             });
         }
     }

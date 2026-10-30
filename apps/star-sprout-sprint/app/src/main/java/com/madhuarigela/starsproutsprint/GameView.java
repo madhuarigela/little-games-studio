@@ -9,7 +9,9 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.os.SystemClock;
 import android.view.MotionEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.View;
+import android.view.HapticFeedbackConstants;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,6 +21,19 @@ import java.util.Random;
 final class GameView extends View {
     private static final int HOME = 0, RUN = 1, PAUSE = 2, RESULT = 3,
             WORLDS = 4, WARDROBE = 5, SETTINGS = 6, PRIVACY = 7;
+    // Keep custom action ids below the framework-reserved action id range.
+    private static final int A_PLAY = 0x00002101, A_WORLDS = 0x00002102,
+            A_WARDROBE = 0x00002103, A_SETTINGS = 0x00002104,
+            A_PAUSE = 0x00002105, A_RESUME = 0x00002106,
+            A_HOME = 0x00002107, A_LEFT = 0x00002108,
+            A_RIGHT = 0x00002109, A_JUMP = 0x0000210a,
+            A_SLIDE = 0x0000210b, A_WORLD0 = 0x0000210c,
+            A_WORLD1 = 0x0000210d, A_WORLD2 = 0x0000210e,
+            A_OUTFIT0 = 0x0000210f, A_OUTFIT1 = 0x00002110,
+            A_OUTFIT2 = 0x00002111, A_OUTFIT3 = 0x00002112,
+            A_SOUND = 0x00002113, A_TUTORIAL = 0x00002114,
+            A_PRIVACY = 0x00002115, A_HAPTICS = 0x00002116;
+    private int lastA11yScreen = -1;
     private static final String[] WORLD_NAMES = {"Cloud Meadow", "Sunset Orchard", "Crystal Grove"};
     private static final String[] OUTFIT_NAMES = {"Sprout", "Sunbeam", "Berry", "Starlight"};
     private static final int[] OUTFIT_COLORS = {0xffffd36c, 0xffffa64d, 0xffe887ae, 0xff9ba7f5};
@@ -42,7 +57,19 @@ final class GameView extends View {
         this.sounds = sounds;
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         setFocusable(true);
-        setContentDescription("Star Sprout Sprint. Swipe sideways to change lanes, swipe up to jump, and swipe down to slide. Collect seeds and avoid obstacles.");
+        setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+        setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName("android.view.View");
+                addAccessibleActions(info);
+            }
+            @Override public boolean performAccessibilityAction(View host, int action, android.os.Bundle args) {
+                if (performAccessibleAction(action)) return true;
+                return super.performAccessibilityAction(host, action, args);
+            }
+        });
+        refreshAccessibilityDescription();
         selectedWorld = data.world();
     }
 
@@ -59,10 +86,14 @@ final class GameView extends View {
     }
 
     boolean handleBack() {
-        if (screen == RUN) { screen = PAUSE; return true; }
-        if (screen == PAUSE) { screen = RUN; return true; }
-        if (screen != HOME) { screen = HOME; return true; }
-        return false;
+        if (screen == HOME) return false;
+        if (screen == RUN) screen = PAUSE;
+        else if (screen == PAUSE) screen = RUN;
+        else screen = HOME;
+        refreshAccessibilityDescription();
+        invalidate();
+        sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        return true;
     }
 
     @Override protected void onDraw(Canvas canvas) {
@@ -90,10 +121,78 @@ final class GameView extends View {
         }
         if (outfitToastFrames > 0) { outfitToastFrames--; drawToast(canvas, h, toast); }
         canvas.restore();
+        refreshAccessibilityDescription();
         // Animate only during an active run. Static menus should go idle to save battery and let UI automation settle.
         if (!appPaused && screen == RUN) postInvalidateOnAnimation();
     }
 
+    private void refreshAccessibilityDescription() {
+        if (lastA11yScreen == screen) return;
+        lastA11yScreen = screen;
+        String description;
+        switch (screen) {
+            case HOME: description = "Star Sprout Sprint home. Best " + data.bestMeters() + " metres. " + data.seeds() + " seeds. Swipe sideways to change lanes, swipe up to jump, swipe down to slide. Available actions: Play, Worlds, Wardrobe, Settings."; break;
+            case RUN: description = "Run in progress. " + meters + " metres, " + runSeeds + " seeds collected. Swipe sideways to change lanes, up to jump, down to slide. Available actions: Move left, Move right, Jump, Slide, Pause."; break;
+            case PAUSE: description = "Run paused at " + meters + " metres. Available actions: Resume, Home."; break;
+            case RESULT: description = "Run complete. " + meters + " metres and " + runSeeds + " seeds collected. Available actions: Run again, Home."; break;
+            case WORLDS: description = "Choose a garden world. Available actions: Cloud Meadow, Sunset Orchard, Crystal Grove, Home."; break;
+            case WARDROBE: description = "Choose a sprout outfit. Available actions: Sprout, Sunbeam, Berry, Starlight, Home."; break;
+            case SETTINGS: description = "Settings. Sound is " + (data.soundOn() ? "on" : "off") + ", haptics are " + (data.hapticsOn() ? "on" : "off") + ". Available actions: Toggle sound, Toggle haptics, Replay controls, Privacy, Home."; break;
+            default: description = "Privacy note. Available action: Settings.";
+        }
+        setContentDescription(description);
+    }
+
+    private static void addAction(AccessibilityNodeInfo info, int id, String label) {
+        info.addAction(new AccessibilityNodeInfo.AccessibilityAction(id, label));
+    }
+
+    private void addAccessibleActions(AccessibilityNodeInfo info) {
+        switch (screen) {
+            case HOME: addAction(info, A_PLAY, "Play"); addAction(info, A_WORLDS, "Worlds"); addAction(info, A_WARDROBE, "Wardrobe"); addAction(info, A_SETTINGS, "Settings"); break;
+            case RUN: addAction(info, A_LEFT, "Move left"); addAction(info, A_RIGHT, "Move right"); addAction(info, A_JUMP, "Jump"); addAction(info, A_SLIDE, "Slide"); addAction(info, A_PAUSE, "Pause"); break;
+            case PAUSE: addAction(info, A_RESUME, "Resume"); addAction(info, A_HOME, "Home"); break;
+            case RESULT: addAction(info, A_PLAY, "Run again"); addAction(info, A_HOME, "Home"); break;
+            case WORLDS: addAction(info, A_WORLD0, WORLD_NAMES[0]); addAction(info, A_WORLD1, WORLD_NAMES[1]); addAction(info, A_WORLD2, WORLD_NAMES[2]); addAction(info, A_HOME, "Home"); break;
+            case WARDROBE: addAction(info, A_OUTFIT0, OUTFIT_NAMES[0]); addAction(info, A_OUTFIT1, OUTFIT_NAMES[1]); addAction(info, A_OUTFIT2, OUTFIT_NAMES[2]); addAction(info, A_OUTFIT3, OUTFIT_NAMES[3]); addAction(info, A_HOME, "Home"); break;
+            case SETTINGS: addAction(info, A_SOUND, "Toggle sound"); addAction(info, A_HAPTICS, "Toggle haptics"); addAction(info, A_TUTORIAL, "Replay controls"); addAction(info, A_PRIVACY, "Privacy"); addAction(info, A_HOME, "Home"); break;
+            case PRIVACY: addAction(info, A_SETTINGS, "Settings"); break;
+        }
+    }
+
+    private boolean performAccessibleAction(int action) {
+        sounds.button();
+        haptic();
+        switch (action) {
+            case A_PLAY: if (screen == HOME || screen == RESULT) beginRun(); else return false; break;
+            case A_WORLDS: if (screen != HOME) return false; screen = WORLDS; break;
+            case A_WARDROBE: if (screen != HOME) return false; screen = WARDROBE; break;
+            case A_SETTINGS: if (screen == HOME || screen == PRIVACY) screen = SETTINGS; else return false; break;
+            case A_PAUSE: if (screen != RUN) return false; screen = PAUSE; break;
+            case A_RESUME: if (screen != PAUSE) return false; screen = RUN; break;
+            case A_HOME: if (screen == HOME) return false; screen = HOME; break;
+            case A_LEFT: if (screen != RUN) return false; moveLane(-1); break;
+            case A_RIGHT: if (screen != RUN) return false; moveLane(1); break;
+            case A_JUMP: if (screen != RUN) return false; jump(); break;
+            case A_SLIDE: if (screen != RUN) return false; slide(); break;
+            case A_WORLD0: if (screen != WORLDS) return false; selectWorld(0); break;
+            case A_WORLD1: if (screen != WORLDS) return false; selectWorld(1); break;
+            case A_WORLD2: if (screen != WORLDS) return false; selectWorld(2); break;
+            case A_OUTFIT0: if (screen != WARDROBE) return false; chooseOutfit(0); break;
+            case A_OUTFIT1: if (screen != WARDROBE) return false; chooseOutfit(1); break;
+            case A_OUTFIT2: if (screen != WARDROBE) return false; chooseOutfit(2); break;
+            case A_OUTFIT3: if (screen != WARDROBE) return false; chooseOutfit(3); break;
+            case A_SOUND: if (screen != SETTINGS) return false; data.setSoundOn(!data.soundOn()); sounds.setEnabled(data.soundOn()); break;
+            case A_HAPTICS: if (screen != SETTINGS) return false; data.setHapticsOn(!data.hapticsOn()); break;
+            case A_TUTORIAL: if (screen != SETTINGS) return false; screen = HOME; toast = "Swipe left/right, up to hop, down to slide"; outfitToastFrames = 160; break;
+            case A_PRIVACY: if (screen != SETTINGS) return false; screen = PRIVACY; break;
+            default: return false;
+        }
+        refreshAccessibilityDescription();
+        invalidate();
+        sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        return true;
+    }
     private void update(float dt) {
         if (screen != RUN) return;
         distance += dt * (13f + Math.min(11f, distance / 130f));
@@ -274,9 +373,10 @@ final class GameView extends View {
 
     private void drawSettings(Canvas c, float h) {
         header(c, "SETTINGS", h);
-        button(c, 42, 240, 306, 62, "SOUND  " + (data.soundOn() ? "ON" : "OFF"), 0xfffbf3d7, 0xff326e64);
-        button(c, 42, 325, 306, 62, "HOW TO PLAY", 0xfffbf3d7, 0xff326e64);
-        button(c, 42, 410, 306, 62, "PRIVACY", 0xfffbf3d7, 0xff326e64);
+        button(c, 42, 190, 306, 62, "SOUND  " + (data.soundOn() ? "ON" : "OFF"), 0xfffbf3d7, 0xff326e64);
+        button(c, 42, 270, 306, 62, "HAPTICS  " + (data.hapticsOn() ? "ON" : "OFF"), 0xfffbf3d7, 0xff326e64);
+        button(c, 42, 350, 306, 62, "HOW TO PLAY", 0xfffbf3d7, 0xff326e64);
+        button(c, 42, 430, 306, 62, "PRIVACY", 0xfffbf3d7, 0xff326e64);
         centered(c, "No account needed. Your garden stays on this device.", 12, 0xff52766b, 518, false);
         button(c, 85, h - 95, 220, 54, "BACK", 0xfffbf3d7, 0xff326e64);
     }
@@ -378,6 +478,7 @@ final class GameView extends View {
             float dx = event.getX() / scale - downX, dy = event.getY() / scale - downY;
             if (Math.abs(dx) > 44 || Math.abs(dy) > 50) {
                 if (Math.abs(dx) > Math.abs(dy)) moveLane(dx > 0 ? 1 : -1); else if (dy < 0) jump(); else slide();
+                haptic();
                 pointerHandled = true; data.setTutorialSeen(); return true;
             }
         }
@@ -394,6 +495,7 @@ final class GameView extends View {
     private void handleTap(float x, float y) {
         float h = virtualHeight;
         sounds.button();
+        haptic();
         if (screen == HOME) {
             if (in(x,y,55,h-300,280,64)) beginRun();
             else if (in(x,y,43,h-218,145,54)) screen = WORLDS;
@@ -420,12 +522,19 @@ final class GameView extends View {
             else if (y >= 471 && y < 554) chooseOutfit(x < 195 ? 2 : 3);
             else if (y > h - 120) screen = HOME;
         } else if (screen == SETTINGS) {
-            if (y >= 230 && y < 310) { data.setSoundOn(!data.soundOn()); sounds.setEnabled(data.soundOn()); }
-            else if (y >= 315 && y < 400) { screen = HOME; toast = "Swipe left/right, up to hop, down to slide"; outfitToastFrames = 160; }
-            else if (y >= 400 && y < 485) screen = PRIVACY;
+            if (y >= 180 && y < 260) { data.setSoundOn(!data.soundOn()); sounds.setEnabled(data.soundOn()); }
+            else if (y >= 260 && y < 340) data.setHapticsOn(!data.hapticsOn());
+            else if (y >= 340 && y < 420) { screen = HOME; toast = "Swipe left/right, up to hop, down to slide"; outfitToastFrames = 160; }
+            else if (y >= 420 && y < 500) screen = PRIVACY;
             else if (y > h - 120) screen = HOME;
         } else if (screen == PRIVACY && y > h - 120) screen = SETTINGS;
+        refreshAccessibilityDescription();
         invalidate();
+        sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+    }
+
+    private void haptic() {
+        if (data.hapticsOn()) performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
     }
 
     private void selectWorld(int index) {
