@@ -5,17 +5,19 @@ on:
     paths:
       - 'apps/star-sprout-sprint/**'
       - '.github/workflows/android.yml'
+      - 'docs/**'
   pull_request:
     paths:
       - 'apps/star-sprout-sprint/**'
       - '.github/workflows/android.yml'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -25,13 +27,40 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Build test APK and Play bundle
+      - name: Run JVM unit tests
+        run: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:testDebugUnitTest
+      - name: Assemble debug APK and release AAB
         run: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:assembleDebug :app:bundleRelease
-      - name: Save build outputs
+      - name: Prepare upload key (optional)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p apps/star-sprout-sprint/app/build/keys
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > apps/star-sprout-sprint/app/build/keys/upload.jks
+      - name: Rebuild signed release bundle when key is configured
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/apps/star-sprout-sprint/app/build/keys/upload.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:bundleRelease
+      - name: Run instrumented tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          script: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:connectedDebugAndroidTest
+      - name: Save build outputs and test reports
         uses: actions/upload-artifact@v4
         with:
           name: star-sprout-sprint-build
           path: |
             apps/star-sprout-sprint/app/build/outputs/apk/debug/*.apk
             apps/star-sprout-sprint/app/build/outputs/bundle/release/*.aab
+            apps/star-sprout-sprint/app/build/reports/tests/testDebugUnitTest/**
+            apps/star-sprout-sprint/app/build/reports/androidTests/connected/**
           if-no-files-found: error
