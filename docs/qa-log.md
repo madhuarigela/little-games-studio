@@ -45,5 +45,5 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Reproduction:** Launch `MainActivityInstrumentedTest.launchesAndExposesGameInstructions`; iterate `AccessibilityNodeInfo.getActionList()` and compare every label with `"Play".contentEquals(label)`.
 - **Cause:** Android includes standard accessibility actions whose labels are null; the test called `contentEquals` with a null argument, causing `NullPointerException` at line 26.
 - **Fix:** Skip unlabeled actions before comparing the custom Play label. Added CI XML printing so future failures are visible in the job log; the captured XML confirmed the NPE.
-- **Verification:** Pending CI after fix. Previous green run 41032162596 verified the earlier accessibility implementation before this brittle assertion was added.
+- **Verification:** PASS in run 41050606144 (commit `78a5ba1f2d247bff9f55f5626e0892a3cb32ef51`): all four JVM unit tests, APK/AAB assembly, emulator instrumentation, and artifact upload completed successfully. Artifact `star-sprout-sprint-build` (ID `12975146658`) contains the debug APK, unsigned release AAB, and reports.
 
