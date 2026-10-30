@@ -10,3 +10,9 @@
 
 ## Defect tracking convention
 Add each finding with date, severity (P0–P3), reproducible steps, expected/actual behavior, fix commit, and verification result. Never mark NOT VERIFIED as passed.
+
+## 2026-10-30 — CI workflow validation failure
+- **Severity:** P1 (release pipeline unable to start).
+- **Reproduction:** Push workflow using `secrets.*` directly in step `if` expressions; Actions reported a failed run with no jobs.
+- **Cause/fix:** GitHub does not allow secret context in `if`. Replaced with a dedicated step that emits a boolean output without printing the secret; conditional steps now use that output.
+- **Verification:** Pending new CI run.
