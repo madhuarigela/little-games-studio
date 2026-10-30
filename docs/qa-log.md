@@ -22,3 +22,9 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Observed:** Run 41029101220 passed JVM tests and artifact assembly but remained in the emulator-test step for over 12 minutes; the GitHub run-log endpoint did not expose live output while it was active. Root cause is NOT VERIFIED.
 - **Mitigation:** Stop scheduling continuous Canvas redraws on static screens (active run remains frame-driven), which reduces idle battery use and lets UI automation settle. Set explicit emulator launch flags, disable emulator animations, and add a finite job timeout.
 - **Verification:** Pending a subsequent CI run.
+
+## 2026-10-30 — second emulator run stalled
+- **Severity:** P2 (emulator instrumentation not completing).
+- **Observed:** Run 41030690734 passed JVM tests and bundle assembly but remained at the emulator step. Root cause remains NOT VERIFIED.
+- **Mitigation:** App has no Google Play Services dependency, so changed API 35 test image from `google_apis` to standard `default` image to reduce setup work. Prior static-redraw mitigation remains.
+- **Verification:** Pending third CI run.
