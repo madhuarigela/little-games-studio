@@ -3,6 +3,10 @@ package com.madhuarigela.starsproutsprint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Locale;
+
 final class GameData {
     private static final int WORLD_COUNT = 3;
     private static final int OUTFIT_COUNT = 4;
@@ -14,6 +18,9 @@ final class GameData {
 
     int bestMeters() { return GameRules.safeDistance(prefs.getInt("best_meters", 0)); }
     int seeds() { return Math.max(0, prefs.getInt("seeds", 0)); }
+    int diamonds() { return Math.max(0, prefs.getInt("diamonds", 0)); }
+    boolean adsRemoved() { return prefs.getBoolean("ads_removed", false); }
+    long lastInterstitialAt() { return Math.max(0L, prefs.getLong("last_interstitial_at", 0L)); }
     int world() { return clamp(prefs.getInt("world", 0), 0, WORLD_COUNT - 1); }
     int outfit() { return clamp(prefs.getInt("outfit", 0), 0, OUTFIT_COUNT - 1); }
     boolean soundOn() { return prefs.getBoolean("sound_on", true); }
@@ -22,6 +29,36 @@ final class GameData {
 
     void setSoundOn(boolean value) { prefs.edit().putBoolean("sound_on", value).apply(); }
     void setHapticsOn(boolean value) { prefs.edit().putBoolean("haptics_on", value).apply(); }
+    void addDiamonds(int amount) {
+        if (amount <= 0) return;
+        prefs.edit().putInt("diamonds", GameRules.safeCurrencyAdd(diamonds(), amount)).apply();
+    }
+    void setAdsRemoved() { prefs.edit().putBoolean("ads_removed", true).apply(); }
+    void setLastInterstitialAt(long timeMs) {
+        if (timeMs > 0) prefs.edit().putLong("last_interstitial_at", timeMs).apply();
+    }
+    boolean hasProcessedPurchase(String token) {
+        return token != null && !token.isEmpty() && prefs.getBoolean("purchase_" + tokenDigest(token), false);
+    }
+
+    boolean grantDiamondsForPurchase(String token, int amount) {
+        if (token == null || token.isEmpty() || amount <= 0) return false;
+        String key = "purchase_" + tokenDigest(token);
+        if (prefs.getBoolean(key, false)) return false;
+        return prefs.edit().putInt("diamonds", GameRules.safeCurrencyAdd(diamonds(), amount))
+                .putBoolean(key, true).commit();
+    }
+
+    private static String tokenDigest(String token) {
+        try {
+            byte[] bytes = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
+            StringBuilder result = new StringBuilder(bytes.length * 2);
+            for (byte value : bytes) result.append(String.format(Locale.ROOT, "%02x", value & 0xff));
+            return result.toString();
+        } catch (Exception impossible) {
+            throw new IllegalStateException("SHA-256 is required by Android", impossible);
+        }
+    }
     void setTutorialSeen() { prefs.edit().putBoolean("tutorial_seen", true).apply(); }
     void selectWorld(int value) {
         if (value >= 0 && value < WORLD_COUNT) prefs.edit().putInt("world", value).apply();
@@ -64,3 +101,4 @@ final class GameData {
         return Math.max(min, Math.min(max, value));
     }
 }
+

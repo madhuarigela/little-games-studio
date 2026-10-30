@@ -15,9 +15,9 @@ A bright, original portrait endless runner for general audiences age 13+. Player
 - Offline play. Monetization is planned but must not block core play.
 
 ## Monetization plan (proposed, not active)
-1. Optional rewarded ad: explicit opt-in to double earned seeds after a completed run; grant only from the reward callback and only once per run.
+1. Optional rewarded ad: explicit opt-in to earn three diamonds; grant only from the reward callback.
 2. Interstitial: only at a natural run boundary and at least 180 seconds since the last interstitial; never during play, onboarding, or immediately on launch. Skip/close remains system-controlled.
-3. One-time remove-ads product; optional diamond packs only after server-side purchase verification and clear virtual-item terms. No pay-to-win pressure.
+3. One-time remove-ads product and a 100-diamond pack through Play Billing. The prototype checks Play purchase signatures locally and deduplicates purchase tokens; add backend verification before valuable consumables ship. No pay-to-win pressure.
 4. Debug uses Google's official test ad unit IDs. Production IDs remain in a single local/CI config input and are never enabled until the owner configures AdMob, consent, declarations, and release review.
 5. Purchases use Play Billing; acknowledge promptly, restore/query owned purchases, verify on server before granting consumables. Client signature checks alone are not adequate protection for consumable currency.
 
@@ -35,3 +35,4 @@ A bright, original portrait endless runner for general audiences age 13+. Player
 - Local-only seed progress is resettable and unsuitable as authority for paid currency.
 - Child users may still play a general-audience game; store audience and content rating declarations must be truthful, and ads must follow applicable policy.
 - Store/Play review outcomes cannot be guaranteed by code changes.
+

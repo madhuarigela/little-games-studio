@@ -8,6 +8,9 @@ import android.view.WindowManager;
 public final class MainActivity extends Activity {
     private GameView gameView;
     private SoundEngine soundEngine;
+    private GameData gameData;
+    private AdsManager adsManager;
+    private BillingManager billingManager;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -15,12 +18,31 @@ public final class MainActivity extends Activity {
         window.setStatusBarColor(0xff67c9dc);
         window.setNavigationBarColor(0xff173d46);
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        GameData data = new GameData(this);
+        gameData = new GameData(this);
         soundEngine = new SoundEngine();
-        soundEngine.setEnabled(data.soundOn());
-        gameView = new GameView(this, data, soundEngine);
+        soundEngine.setEnabled(gameData.soundOn());
+        gameView = new GameView(this, gameData, soundEngine);
         setContentView(gameView);
+        adsManager = new AdsManager(this, gameData);
+        adsManager.requestConsentAndLoad();
+        billingManager = new BillingManager(this, gameData);
+        billingManager.connectAndRestore();
         hideSystemBars();
+    }
+
+    void onRunFinished() { if (adsManager != null) adsManager.showInterstitialAfterRun(); }
+    void showRewardedAd() {
+        if (adsManager != null) adsManager.showRewarded(() -> {
+            gameData.addDiamonds(3);
+            if (gameView != null) gameView.onStoreChanged("3 diamonds added");
+        });
+    }
+    void purchaseRemoveAds() { if (billingManager != null) billingManager.purchaseRemoveAds(); }
+    void purchaseDiamondPack() { if (billingManager != null) billingManager.purchaseDiamondPack(); }
+    void restorePurchases() { if (billingManager != null) billingManager.restorePurchases(); }
+    void showPrivacyOptions() { if (adsManager != null) adsManager.showPrivacyOptions(); }
+    void onStorePrices(String removeAdsPrice, String diamondPackPrice) {
+        if (gameView != null) gameView.onStorePrices(removeAdsPrice, diamondPackPrice);
     }
 
     private void hideSystemBars() {
@@ -47,6 +69,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (billingManager != null) billingManager.close();
         if (soundEngine != null) soundEngine.release();
         super.onDestroy();
     }
@@ -56,3 +79,4 @@ public final class MainActivity extends Activity {
         super.onBackPressed();
     }
 }
+

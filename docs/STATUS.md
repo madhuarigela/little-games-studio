@@ -16,9 +16,9 @@ Last updated: 2026-10-30
 | 3 Architecture | DONE (design only) | Architecture and migration notes in `docs/play-store/architecture.md`; Java/Canvas migration mismatch remains open. |
 | 4 Gameplay | IN PROGRESS | Playable offline prototype, bounds-safe save/economy helpers; active-run frame pacing only. 60 fps target NOT VERIFIED. |
 | 5 Polish | IN PROGRESS | Original Canvas character, environments, generated audio; accessible screen actions and haptics implemented. Device review NOT VERIFIED. |
-| 6 Monetization | NOT STARTED | Requires ad/billing integration, consent review, and purchase test. |
-| 7 QA | IN PROGRESS | Four JVM tests, APK/AAB assembly, and emulator instrumentation all PASS in run 41050606144. Gameplay/device QA remains NOT VERIFIED. |
-| 8 Security + compliance | IN PROGRESS | Draft privacy and disclosure materials; must be updated after SDK integration and verified in Console. |
+| 6 Monetization | IN PROGRESS | Google Mobile Ads + UMP, opt-in rewarded diamonds, 180-second interstitial cap, and Play Billing local signature verification implemented; CI verification pending. Account flows NOT VERIFIED. |
+| 7 QA | IN PROGRESS | Prior run 41050606144 passed four JVM tests, APK/AAB assembly, and emulator launch. Two purchase-signature unit tests added; CI after monetization edits pending. Gameplay/device QA remains NOT VERIFIED. |
+| 8 Security + compliance | IN PROGRESS | Privacy and Data Safety drafts now describe Google Ads/Billing; account-specific messages/forms, backend verification, and console declarations NOT VERIFIED. |
 | 9 Release engineering | IN PROGRESS | CI emits debug APK and unsigned AAB. Conditional signing workflow and secrets instructions remain. |
 | 10 Store pack | DRAFT | Listing, graphics specs, test plan are in `docs/play-store/`. |
 | 11 Post-launch | DRAFT | Metrics plan is in `docs/play-store/post-launch.md`. |
@@ -27,20 +27,19 @@ Last updated: 2026-10-30
 - Workflow: https://github.com/madhuarigela/little-games-studio/actions/runs/41024997190
 - Commit: `5ae7bc54b8de761edf77f9e84a55cba0f16470a0`
 - Build outputs: workflow artifact `star-sprout-sprint-build` (debug APK + unsigned release AAB).
-- Current config: compile SDK 37, target SDK 36, min SDK 23, version 1 / 1.0.0.
-- Automated test results: NOT VERIFIED (baseline workflow does not yet execute test tasks).
+- Current config: compile SDK 37, target SDK 36, min SDK 24, version 1 / 1.0.0.
 - Latest CI run 41050606144: PASS — four JVM unit tests, debug APK, unsigned release AAB, emulator instrumentation, and artifact upload. Artifact ID `12975146658`.
 - Earlier diagnostic run 41048622797 failed only because the test passed a null accessibility label to `contentEquals`; fixed and verified in 41050606144.
 - Physical device, 60 fps, low-memory, battery, AdMob fill, Billing, Play Console, signing, privacy URL: NOT VERIFIED.
 
 ## Open risks
 1. No signed AAB until owner creates and stores an upload key and adds GitHub secrets.
-2. AdMob and Billing SDKs are not integrated; no revenue is enabled.
-3. Adding ad/measurement SDKs changes Data Safety and privacy disclosures; no final declarations until implementation is fixed.
-4. A real Android device has not been used for gameplay/performance/accessibility QA.
-5. No server-side purchase validation or Play Developer API setup exists; consumables must not ship with client-only verification.
-6. App uses Java and a custom Canvas View; the owner asked for Kotlin or Flutter, so this remains an architecture mismatch until migrated.
-7. No hosted privacy-policy URL or Play Console listing exists.
+2. AdMob consent, production ad units/fill, and Play products/account flows remain owner setup and NOT VERIFIED.
+3. Final Data Safety and privacy disclosures must match the configured SDK and release binary.
+4. No physical device gameplay, performance, accessibility, or consent QA has been performed.
+5. Purchase checks are client-side only; server-side Play Developer API verification remains recommended before valuable consumables ship.
+6. App uses Java and a custom Canvas View; Kotlin/Flutter migration remains an architecture mismatch with the original request.
+7. No hosted privacy-policy URL or Play Console listing exists; release AAB remains unsigned without the owner key.
 
 ## Owner actions still required
 - Create/maintain Play Console and AdMob accounts; provide publisher contact details through the listing, not source code.

@@ -1,0 +1,10 @@
+# Copy these entries into the ignored local.properties beside settings.gradle.
+# Do not commit local.properties. IDs are configuration; passwords and keystores stay out of source.
+admob_app_id=ca-app-pub-0000000000000000~0000000000
+admob_rewarded_unit_id=ca-app-pub-0000000000000000/0000000000
+admob_interstitial_unit_id=ca-app-pub-0000000000000000/0000000000
+billing_remove_ads_product_id=REPLACE_REMOVE_ADS_PRODUCT_ID
+billing_diamond_pack_product_id=REPLACE_DIAMOND_PACK_PRODUCT_ID
+# Public app licensing key from Play Console. It is not a signing secret.
+play_license_public_key=REPLACE_WITH_PLAY_LICENSE_PUBLIC_KEY
+

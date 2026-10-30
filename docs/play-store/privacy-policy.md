@@ -2,16 +2,23 @@
 
 Last updated: 2026-10-30
 
-Star Sprout Sprint is published by the developer identified on its Google Play listing. This draft describes the current offline prototype and must be revised before any advertising, billing, analytics, crash-reporting, or cloud features ship.
+Star Sprout Sprint is published by the developer named on its Google Play listing. This draft describes the monetized prototype; add the developer's monitored support contact and verify every detail against final AdMob and Play Console settings before publication.
 
-## Current prototype
-The current build does not request internet access, create accounts, run advertising or analytics SDKs, or send personal information to a server. The game stores settings, scores, and earned in-game seeds in private storage on your device. Clearing app storage or uninstalling removes this local data.
+## Information and use
 
-## Future optional advertising and purchases
-If advertising or Play Billing is added, this policy must identify the SDK providers, data accessed or shared by each SDK, purpose, consent controls, retention, and opt-out/deletion options. We will update this policy and Play Data Safety form before release of that build. Do not publish this draft as final while those integrations are active.
+The game has no game account or social profile. It stores settings, scores, seeds, diamonds, ad-removal status, and local purchase-token deduplication records in private app storage on your device. Clearing app storage or uninstalling removes this local data. Google Play retains its own purchase records and can restore eligible non-consumable purchases.
 
-## Children
-The declared target audience is general 13+. The game is not designed or marketed as a child-directed app. We do not knowingly collect personal information in the current offline build. If audience targeting changes, this section and product behavior must be reviewed against current Google Play Families requirements and applicable law.
+The app integrates Google Mobile Ads and Google's User Messaging Platform (UMP). After UMP's consent check allows ad requests, Google may process device identifiers, ad request and interaction details, and diagnostic or fraud-prevention signals to serve, measure, and protect ads under Google's terms and privacy policy. Rewarded video is optional and grants three diamonds. Interstitial ads may appear after completed runs, no more than once per three-minute interval. Users can revisit ad privacy options from Settings.
+
+Google Play Billing processes optional purchases. The app locally verifies purchase signatures with the app's Play licensing public key and stores entitlements on-device. This prototype does not send purchase tokens to an app server. Client-side checks provide less refund, revocation, and fraud protection than server-side Play Developer API validation; the app should not sell valuable or transferable consumables until server verification is added.
+
+No separate analytics or crash-reporting SDK is configured. Exact SDK data practices, retention, and Data Safety categories must be checked against current Google disclosures and the final binary before release. To delete local game data, clear the app's storage or uninstall it. Google Play purchase history is managed by Google.
+
+## Audience
+
+The selected audience is general 13+, and the app is not designed or marketed as child-directed. If the intended audience changes, review ad treatment, purchases, Google Play Families requirements, and applicable law before release.
 
 ## Contact
-Use the developer support contact shown on the Google Play listing. Add a monitored email address before publication.
+
+Use the monitored developer support email shown on the Google Play listing. Add that address before publication.
+

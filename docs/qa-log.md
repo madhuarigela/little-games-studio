@@ -47,3 +47,9 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Fix:** Skip unlabeled actions before comparing the custom Play label. Added CI XML printing so future failures are visible in the job log; the captured XML confirmed the NPE.
 - **Verification:** PASS in run 41050606144 (commit `78a5ba1f2d247bff9f55f5626e0892a3cb32ef51`): all four JVM unit tests, APK/AAB assembly, emulator instrumentation, and artifact upload completed successfully. Artifact `star-sprout-sprint-build` (ID `12975146658`) contains the debug APK, unsigned release AAB, and reports.
 
+## 2026-10-30 — monetization integration in progress
+- **Changes:** Added Google Mobile Ads 25.5.0, UMP 4.0.0, Play Billing 9.1.0, UMP consent gating/privacy options, optional rewarded diamond grants, a 180-second interstitial cooldown, Play product prices/purchase/restore, package and purchase-state checks, RSA signature verification, and token-hash deduplication. Debug uses official AdMob test IDs; release values come from ignored `local.properties`.
+- **Privacy/security:** Updated policy and Data Safety drafts. Purchases are only client-side verified; server validation, actual product setup, consent message configuration, ad fill, refunds, and device checks are NOT VERIFIED.
+- **Local build attempt:** NOT VERIFIED because this laptop shell has no Java command/JAVA_HOME available. Run the full GitHub Actions build after the change is pushed.
+- **CI verification:** Pending.
+

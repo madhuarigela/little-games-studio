@@ -2,18 +2,36 @@ plugins {
     id 'com.android.application'
 }
 
+def monetizationProperties = new Properties()
+def monetizationFile = rootProject.file('local.properties')
+if (monetizationFile.exists()) {
+    monetizationFile.withInputStream { monetizationProperties.load(it) }
+}
+def localValue = { String key, String fallback -> monetizationProperties.getProperty(key, fallback) }
+def debugAdAppId = 'ca-app-pub-3940256099942544~3347511713'
+def debugRewardedId = 'ca-app-pub-3940256099942544/5224354917'
+def debugInterstitialId = 'ca-app-pub-3940256099942544/1033173712'
+def releaseAdAppId = localValue('admob_app_id', 'ca-app-pub-0000000000000000~0000000000')
+def releaseRewardedId = localValue('admob_rewarded_unit_id', 'ca-app-pub-0000000000000000/0000000000')
+def releaseInterstitialId = localValue('admob_interstitial_unit_id', 'ca-app-pub-0000000000000000/0000000000')
+def billingPublicKey = localValue('play_license_public_key', 'REPLACE_WITH_PLAY_LICENSE_PUBLIC_KEY')
+def removeAdsProductId = localValue('billing_remove_ads_product_id', 'REPLACE_REMOVE_ADS_PRODUCT_ID')
+def diamondPackProductId = localValue('billing_diamond_pack_product_id', 'REPLACE_DIAMOND_PACK_PRODUCT_ID')
+
 android {
     namespace 'com.madhuarigela.starsproutsprint'
     compileSdk 37
 
     defaultConfig {
         applicationId 'com.madhuarigela.starsproutsprint'
-        minSdk 23
+        minSdk 24
         targetSdk 36
         versionCode 1
         versionName '1.0.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
+
+    buildFeatures { buildConfig true }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -33,7 +51,21 @@ android {
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders = [admobAppId: debugAdAppId]
+            buildConfigField 'String', 'ADMOB_REWARDED_UNIT_ID', "\"${debugRewardedId}\""
+            buildConfigField 'String', 'ADMOB_INTERSTITIAL_UNIT_ID', "\"${debugInterstitialId}\""
+            buildConfigField 'String', 'PLAY_LICENSE_PUBLIC_KEY', "\"${billingPublicKey}\""
+            buildConfigField 'String', 'REMOVE_ADS_PRODUCT_ID', "\"${removeAdsProductId}\""
+            buildConfigField 'String', 'DIAMOND_PACK_PRODUCT_ID', "\"${diamondPackProductId}\""
+        }
         release {
+            manifestPlaceholders = [admobAppId: releaseAdAppId]
+            buildConfigField 'String', 'ADMOB_REWARDED_UNIT_ID', "\"${releaseRewardedId}\""
+            buildConfigField 'String', 'ADMOB_INTERSTITIAL_UNIT_ID', "\"${releaseInterstitialId}\""
+            buildConfigField 'String', 'PLAY_LICENSE_PUBLIC_KEY', "\"${billingPublicKey}\""
+            buildConfigField 'String', 'REMOVE_ADS_PRODUCT_ID', "\"${removeAdsProductId}\""
+            buildConfigField 'String', 'DIAMOND_PACK_PRODUCT_ID', "\"${diamondPackProductId}\""
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (uploadStorePath) signingConfig signingConfigs.release
@@ -42,8 +74,12 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    implementation 'com.android.billingclient:billing:9.1.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test:core:1.6.1'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
 }
+
