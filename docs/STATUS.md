@@ -16,8 +16,8 @@ Last updated: 2026-10-30
 | 3 Architecture | DONE (design only) | Architecture and migration notes in `docs/play-store/architecture.md`; Java/Canvas migration mismatch remains open. |
 | 4 Gameplay | IN PROGRESS | Playable offline prototype, bounds-safe save/economy helpers; active-run frame pacing only. 60 fps target NOT VERIFIED. |
 | 5 Polish | IN PROGRESS | Original Canvas character, environments, generated audio; accessible screen actions and haptics implemented. Device review NOT VERIFIED. |
-| 6 Monetization | IN PROGRESS | Google Mobile Ads + UMP, opt-in rewarded diamonds, 180-second interstitial cap, and Play Billing local signature verification implemented; CI verification pending. Account flows NOT VERIFIED. |
-| 7 QA | IN PROGRESS | Prior run 41050606144 passed four JVM tests, APK/AAB assembly, and emulator launch. Two purchase-signature unit tests added; CI after monetization edits pending. Gameplay/device QA remains NOT VERIFIED. |
+| 6 Monetization | IN PROGRESS | Google Mobile Ads + UMP, opt-in rewarded diamonds, 180-second interstitial cap, and Play Billing local signature verification implemented; account flows NOT VERIFIED. |
+| 7 QA | IN PROGRESS | Latest run 41054618157: JVM tests PASS, APK/AAB assembly PASS, emulator instrumentation still running. Gameplay/device QA remains NOT VERIFIED. |
 | 8 Security + compliance | IN PROGRESS | Privacy and Data Safety drafts now describe Google Ads/Billing; account-specific messages/forms, backend verification, and console declarations NOT VERIFIED. |
 | 9 Release engineering | IN PROGRESS | CI emits debug APK and unsigned AAB. Conditional signing workflow and secrets instructions remain. |
 | 10 Store pack | DRAFT | Listing, graphics specs, test plan are in `docs/play-store/`. |
@@ -29,6 +29,7 @@ Last updated: 2026-10-30
 - Build outputs: workflow artifact `star-sprout-sprint-build` (debug APK + unsigned release AAB).
 - Current config: compile SDK 37, target SDK 36, min SDK 24, version 1 / 1.0.0.
 - Latest CI run 41050606144: PASS — four JVM unit tests, debug APK, unsigned release AAB, emulator instrumentation, and artifact upload. Artifact ID `12975146658`.
+- Monetization build run 41054618157: JVM tests and APK/AAB assembly PASS; emulator test is IN PROGRESS. It includes the RSA purchase-signature unit tests.
 - Earlier diagnostic run 41048622797 failed only because the test passed a null accessibility label to `contentEquals`; fixed and verified in 41050606144.
 - Physical device, 60 fps, low-memory, battery, AdMob fill, Billing, Play Console, signing, privacy URL: NOT VERIFIED.
 
@@ -40,6 +41,10 @@ Last updated: 2026-10-30
 5. Purchase checks are client-side only; server-side Play Developer API verification remains recommended before valuable consumables ship.
 6. App uses Java and a custom Canvas View; Kotlin/Flutter migration remains an architecture mismatch with the original request.
 7. No hosted privacy-policy URL or Play Console listing exists; release AAB remains unsigned without the owner key.
+
+## Current checkpoint
+- Implemented: original playable runner prototype; three biomes/outfits; local saves; original synthesized audio; settings, accessibility actions, and haptics; product/UX/architecture/store drafts; CI unit and emulator tests; consent-gated AdMob with official debug test IDs; optional rewarded diamond grants; interstitial cooldown; Play Billing purchase/restore and local RSA signature checks; privacy and Data Safety drafts.
+- Not completed: the current monetization CI run, all remaining Stage 7–11 work, signed release AAB, actual AdMob/Play product setup, server-side purchase verification, physical-device checks, hosted policy URL, and Play Console submissions.
 
 ## Owner actions still required
 - Create/maintain Play Console and AdMob accounts; provide publisher contact details through the listing, not source code.

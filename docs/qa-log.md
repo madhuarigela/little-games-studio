@@ -53,3 +53,8 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Local build attempt:** NOT VERIFIED because this laptop shell has no Java command/JAVA_HOME available. Run the full GitHub Actions build after the change is pushed.
 - **CI verification:** Pending.
 
+## 2026-10-30 — monetization build checkpoints
+- **Run 41054109741:** Failed compilation because the GitHub upload truncated `GameView.java`, inserting an ellipsis in Java source. Corrected by uploading the complete file in byte-safe chunks.
+- **Run 41054374698:** Failed compilation because newly assigned accessibility action IDs collided. Assigned unique IDs and pushed the correction.
+- **Run 41054618157:** JVM unit tests PASS, including purchase signature tests; APK/AAB assembly PASS; emulator instrumentation IN PROGRESS at the latest check. Do not report the full run green until that step completes.
+
