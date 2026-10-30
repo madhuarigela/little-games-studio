@@ -40,7 +40,10 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Verification:** Pending CI after commit.
 
 ## 2026-10-30 — accessibility instrumentation failed
-- **Run:** 41033725237. Unit suite and artifact build passed; emulator instrumentation failed.
-- **Details:** Gradle reports failing tests at `app/build/reports/androidTests/connected/debug/index.html`, but the current workflow skipped artifact upload after failure, so the exact assertion is NOT VERIFIED.
-- **Mitigation:** Make test report upload run unconditionally and tolerate missing report paths for diagnostic runs.
-- **Verification:** Pending new diagnostic CI run.
+- **Run:** 41048622797. JVM tests and APK/AAB assembly passed; emulator instrumentation failed.
+- **Severity:** P2 (test harness defect; accessibility action presence itself was not disproved).
+- **Reproduction:** Launch `MainActivityInstrumentedTest.launchesAndExposesGameInstructions`; iterate `AccessibilityNodeInfo.getActionList()` and compare every label with `"Play".contentEquals(label)`.
+- **Cause:** Android includes standard accessibility actions whose labels are null; the test called `contentEquals` with a null argument, causing `NullPointerException` at line 26.
+- **Fix:** Skip unlabeled actions before comparing the custom Play label. Added CI XML printing so future failures are visible in the job log; the captured XML confirmed the NPE.
+- **Verification:** Pending CI after fix. Previous green run 41032162596 verified the earlier accessibility implementation before this brittle assertion was added.
+

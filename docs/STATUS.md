@@ -15,9 +15,9 @@ Last updated: 2026-10-30
 | 2 UX | DONE | Flow, wireframes, and accessibility rules drafted in `docs/play-store/ux-spec.md`; UI changes continue in implementation. |
 | 3 Architecture | DONE (design only) | Architecture and migration notes in `docs/play-store/architecture.md`; Java/Canvas migration mismatch remains open. |
 | 4 Gameplay | IN PROGRESS | Playable offline prototype, bounds-safe save/economy helpers; active-run frame pacing only. 60 fps target NOT VERIFIED. |
-| 5 Polish | IN PROGRESS | Original Canvas character, environments, generated audio; accessible screen actions and haptics added locally, pending CI. Device review NOT VERIFIED. |
+| 5 Polish | IN PROGRESS | Original Canvas character, environments, generated audio; accessible screen actions and haptics implemented. Device review NOT VERIFIED. |
 | 6 Monetization | NOT STARTED | Requires ad/billing integration, consent review, and purchase test. |
-| 7 QA | IN PROGRESS | Four JVM unit tests and one emulator instrumentation launch test passed in run 41030690734. Gameplay/device QA remains NOT VERIFIED. |
+| 7 QA | IN PROGRESS | Four JVM unit tests and APK/AAB assembly pass. Emulator UI test exposed and fixed a null-label bug in the test itself (run 41048622797); rerun pending. Gameplay/device QA remains NOT VERIFIED. |
 | 8 Security + compliance | IN PROGRESS | Draft privacy and disclosure materials; must be updated after SDK integration and verified in Console. |
 | 9 Release engineering | IN PROGRESS | CI emits debug APK and unsigned AAB. Conditional signing workflow and secrets instructions remain. |
 | 10 Store pack | DRAFT | Listing, graphics specs, test plan are in `docs/play-store/`. |
@@ -29,6 +29,7 @@ Last updated: 2026-10-30
 - Build outputs: workflow artifact `star-sprout-sprint-build` (debug APK + unsigned release AAB).
 - Current config: compile SDK 37, target SDK 36, min SDK 23, version 1 / 1.0.0.
 - Automated test results: NOT VERIFIED (baseline workflow does not yet execute test tasks).
+- Latest CI run 41048622797: JVM unit tests and APK/AAB assembly PASS; emulator test FAILED due to a null-label bug in the test assertion. Fix is committed locally and awaiting CI rerun.
 - Physical device, 60 fps, low-memory, battery, AdMob fill, Billing, Play Console, signing, privacy URL: NOT VERIFIED.
 
 ## Open risks
@@ -46,3 +47,4 @@ Last updated: 2026-10-30
 - Generate upload key locally and add GitHub Secrets; never send private key or passwords in chat.
 - Host privacy policy with GitHub Pages and verify exact URL.
 - Test on physical Android phones; perform Play Console declarations and recruit closed testers if required for the account.
+

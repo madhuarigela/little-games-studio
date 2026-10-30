@@ -23,10 +23,12 @@ public final class MainActivityInstrumentedTest {
                 AccessibilityNodeInfo node = game.createAccessibilityNodeInfo();
                 boolean hasPlayAction = false;
                 for (AccessibilityNodeInfo.AccessibilityAction action : node.getActionList()) {
-                    if ("Play".contentEquals(action.getLabel())) hasPlayAction = true;
+                    CharSequence label = action.getLabel();
+                    if (label != null && "Play".contentEquals(label)) hasPlayAction = true;
                 }
                 assertTrue(hasPlayAction);
             });
         }
     }
 }
+
