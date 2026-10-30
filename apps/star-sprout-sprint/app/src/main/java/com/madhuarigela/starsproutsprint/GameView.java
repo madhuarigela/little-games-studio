@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 8984)
-Total output lines: 619
-
 package com.madhuarigela.starsproutsprint;
 
 import android.content.Context;
@@ -195,7 +192,209 @@ final class GameView extends View {
             case A_SOUND: if (screen != SETTINGS) return false; data.setSoundOn(!data.soundOn()); sounds.setEnabled(data.soundOn()); break;
             case A_HAPTICS: if (screen != SETTINGS) return false; data.setHapticsOn(!data.hapticsOn()); break;
             case A_TUTORIAL: if (screen != SETTINGS) return false; screen = HOME; toast = "Swipe left/right, up to hop, down to slide"; outfitToastFrames = 160; break;
-            case A_PRIVACY: if (screen != SE…2984 tokens truncated…54, "BACK", 0xfffbf3d7, 0xff326e64);
+            case A_PRIVACY: if (screen != SETTINGS) return false; screen = PRIVACY; break;
+            case A_SHOP_HOME: if (screen != HOME) return false; screen = SHOP; break;
+            case A_PRIVACY_OPTIONS: if (screen != PRIVACY) return false; ((MainActivity) getContext()).showPrivacyOptions(); break;
+            case A_SHOP: if (screen != SHOP) return false; ((MainActivity) getContext()).showRewardedAd(); break;
+            case A_SHOP + 1: if (screen != SHOP) return false; ((MainActivity) getContext()).purchaseRemoveAds(); break;
+            case A_SHOP + 2: if (screen != SHOP) return false; ((MainActivity) getContext()).purchaseDiamondPack(); break;
+            case A_SHOP + 3: if (screen != SHOP) return false; ((MainActivity) getContext()).restorePurchases(); break;
+            default: return false;
+        }
+        refreshAccessibilityDescription();
+        invalidate();
+        sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        return true;
+    }
+    private void update(float dt) {
+        if (screen != RUN) return;
+        distance += dt * (13f + Math.min(11f, distance / 130f));
+        meters = (int) distance;
+        if (jumpFrames > 0) jumpFrames--;
+        if (slideFrames > 0) slideFrames--;
+        if (distance >= spawnAt) {
+            int type = random.nextInt(4);
+            int entityLane = random.nextInt(3);
+            entities.add(new Entity(entityLane, type, -.02f));
+            if (random.nextFloat() < .46f) {
+                int seedLane = (entityLane + 1 + random.nextInt(2)) % 3;
+                entities.add(new Entity(seedLane, 3, -.14f));
+            }
+            spawnAt = distance + 14f + random.nextInt(11);
+        }
+        Iterator<Entity> it = entities.iterator();
+        while (it.hasNext()) {
+            Entity e = it.next();
+            e.depth += dt * (.25f + Math.min(.16f, distance / 1800f));
+            if (!e.hitChecked && e.depth >= .86f) {
+                e.hitChecked = true;
+                if (e.lane == lane && e.type == 3) {
+                    runSeeds++;
+                    sounds.collect();
+                    e.collected = true;
+                } else if (e.lane == lane && e.type != 3) {
+                    boolean safe = (e.type == 0 && jumpFrames > 0) || (e.type == 1 && slideFrames > 0);
+                    if (!safe) { sounds.hit(); finishRun(); return; }
+                }
+            }
+            if (e.depth > 1.18f || e.collected) it.remove();
+        }
+    }
+
+    private void drawWorld(Canvas c, float h, boolean road) {
+        int world = selectedWorld;
+        int skyTop = world == 1 ? 0xffffad89 : world == 2 ? 0xff91a0dc : 0xff71cfe0;
+        int skyBottom = world == 1 ? 0xffffe1a5 : world == 2 ? 0xffd5c8ef : 0xffd5f4e5;
+        p.setShader(new LinearGradient(0, 0, 0, h, skyTop, skyBottom, Shader.TileMode.CLAMP));
+        c.drawRect(0, 0, 390, h, p); p.setShader(null);
+        p.setColor(world == 2 ? 0xffeee4ff : 0xfffff1b1);
+        c.drawCircle(315, 115 + (float)Math.sin(anim * .3) * 5, 34, p);
+        drawCloud(c, 60 + (float)Math.sin(anim * .18) * 8, 150, 1.0f);
+        drawCloud(c, 280 + (float)Math.cos(anim * .16) * 10, 215, .72f);
+        drawHill(c, -25, 430, 250, 135, world == 1 ? 0xffd98572 : world == 2 ? 0xff7f8ec2 : 0xff74c99d);
+        drawHill(c, 170, 405, 300, 170, world == 1 ? 0xffc97973 : world == 2 ? 0xff7486ba : 0xff58b989);
+        drawHill(c, -65, 475, 300, 115, world == 1 ? 0xff91c17e : world == 2 ? 0xffa5a2cf : 0xff43a972);
+        if (road) drawTrack(c, h);
+        else {
+            p.setColor(0xff5db878); c.drawRect(0, 568, 390, h, p);
+            for (int i = 0; i < 12; i++) {
+                float x = (i * 47 + (anim * 9) % 47);
+                flower(c, x, 588 + (i % 3) * 15, .65f);
+            }
+        }
+    }
+
+    private void drawTrack(Canvas c, float h) {
+        float horizon = 390f;
+        Path path = new Path();
+        path.moveTo(160, horizon); path.lineTo(230, horizon); path.lineTo(390, h); path.lineTo(0, h); path.close();
+        p.setColor(0xffd9bd86); c.drawPath(path, p);
+        Path center = new Path(); center.moveTo(184, horizon); center.lineTo(206, horizon); center.lineTo(245, h); center.lineTo(145, h); center.close();
+        p.setColor(0xffefd9a8); c.drawPath(center, p);
+        for (int laneLine = 0; laneLine < 2; laneLine++) {
+            float topX = laneLine == 0 ? 178 : 202, bottomX = laneLine == 0 ? 130 : 260;
+            p.setColor(0xffc7a978); p.setStrokeWidth(2); c.drawLine(topX, horizon, bottomX, h, p);
+        }
+        p.setColor(0xff51ae76); c.drawRect(0, h - 45, 390, h, p);
+        for (int i = 0; i < 10; i++) flower(c, (i * 53 + (float)(distance * 4 % 53)), h - 38 - (i % 2) * 13, .5f);
+    }
+
+    private void drawHome(Canvas c, float h) {
+        centered(c, "STAR SPROUT", 32, 0xff1f5b5e, 102, true);
+        centered(c, "SPRINT", 46, 0xfff4a545, 151, true);
+        drawBadge(c, 195, 320 + (float)Math.sin(anim * 2) * 5, 1.25f, data.outfit());
+        centered(c, "Run, hop and collect little seeds!", 16, 0xff316d68, 414, false);
+        centered(c, "BEST  " + data.bestMeters() + " m       SEEDS  " + data.seeds(), 15, 0xff23595c, 451, true);
+        button(c, 55, h - 300, 280, 64, "PLAY", 0xfff39849, 0xffffffff);
+        button(c, 43, h - 218, 145, 54, "WORLDS", 0xfffbf3d7, 0xff326e64);
+        button(c, 202, h - 218, 145, 54, "WARDROBE", 0xfffbf3d7, 0xff326e64);
+        button(c, 43, h - 147, 145, 48, "SETTINGS", 0xfffbf3d7, 0xff326e64);
+        button(c, 202, h - 147, 145, 48, "GARDEN SHOP", 0xfffbf3d7, 0xff326e64);
+        centered(c, "A cozy little run through the garden", 12, 0xff386d62, h - 58, false);
+    }
+
+    private void drawRun(Canvas c, float h) {
+        centered(c, meters + " m", 25, 0xff21585d, 51, true);
+        centered(c, "✦ " + runSeeds, 18, 0xff23595c, 82, true);
+        button(c, 319, 24, 54, 48, "Ⅱ", 0xfffbf3d7, 0xff326e64);
+        for (Entity e : entities) drawEntity(c, e, h);
+        float groundY = h - 155;
+        float jump = jumpFrames > 0 ? (float)Math.sin((1f - jumpFrames / 46f) * Math.PI) * 95f : 0;
+        if (slideFrames > 0) drawBadge(c, laneX(lane, .96f), groundY - 9, .82f, data.outfit());
+        else drawBadge(c, laneX(lane, .96f), groundY - jump, 1f, data.outfit());
+        controls(c, h);
+        if (!data.tutorialSeen() && distance < 12) {
+            rounded(c, 38, 125, 314, 74, 20, 0xeefeffe7);
+            centered(c, "Swipe to move  •  ↑ jump  •  ↓ slide", 14, 0xff245c5d, 154, true);
+            centered(c, "Collect seeds and dodge the garden bits", 12, 0xff477a6f, 177, false);
+        }
+    }
+
+    private void controls(Canvas c, float h) {
+        float y = h - 82;
+        control(c, 48, y, "‹"); control(c, 142, y, "↑"); control(c, 236, y, "↓"); control(c, 330, y, "›");
+    }
+
+    private void drawEntity(Canvas c, Entity e, float h) {
+        float d = Math.max(0f, Math.min(1f, e.depth));
+        float x = laneX(e.lane, d);
+        float y = 393 + d * (h - 550);
+        float size = 12 + d * 36;
+        p.setColor(0x330d4c42); c.drawOval(x - size * .75f, y + size * .55f, x + size * .75f, y + size * .87f, p);
+        if (e.type == 3) {
+            p.setColor(0xffffd65f); c.drawCircle(x, y, size * .55f, p);
+            p.setColor(0xfffff4b7); c.drawCircle(x - size * .16f, y - size * .16f, size * .15f, p);
+            p.setColor(0xff6cae60); c.drawOval(x - size * .65f, y - size * .92f, x - size * .05f, y - size * .38f, p);
+        } else if (e.type == 0) {
+            p.setColor(0xffae7569); c.drawRoundRect(x - size, y - size * .55f, x + size, y + size * .65f, size * .3f, size * .3f, p);
+            p.setColor(0xffd59c80); c.drawCircle(x - size * .35f, y - size * .1f, size * .18f, p);
+        } else if (e.type == 1) {
+            p.setColor(0xff497c56); c.drawRoundRect(x - size * 1.2f, y - size * .8f, x + size * 1.2f, y - size * .25f, size * .3f, size * .3f, p);
+            p.setColor(0xff67a85d); c.drawOval(x - size * .95f, y - size * 1.2f, x - size * .15f, y - size * .4f, p);
+        } else {
+            p.setColor(0xff67a95b); c.drawRoundRect(x - size * 1.2f, y - size * .7f, x + size * 1.2f, y + size * .6f, size * .25f, size * .25f, p);
+            p.setColor(0xffffd66c); c.drawCircle(x - size * .35f, y - size * .14f, size * .12f, p); c.drawCircle(x + size * .35f, y - size * .14f, size * .12f, p);
+        }
+    }
+
+    private void drawResult(Canvas c, float h) {
+        drawBadge(c, 195, 220, 1.2f, data.outfit());
+        centered(c, "RUN COMPLETE", 30, 0xff1f5b5e, 334, true);
+        centered(c, meters + " metres", 22, 0xffed9441, 381, true);
+        centered(c, "+ " + runSeeds + " seeds collected", 17, 0xff316d68, 420, false);
+        centered(c, "BEST  " + data.bestMeters() + " m     TOTAL SEEDS  " + data.seeds(), 14, 0xff23595c, 453, true);
+        centered(c, "DIAMONDS  " + data.diamonds(), 13, 0xff7359ad, 477, true);
+        button(c, 55, h - 230, 280, 60, "RUN AGAIN", 0xfff39849, 0xffffffff);
+        button(c, 55, h - 162, 280, 48, "GARDEN SHOP", 0xfffbf3d7, 0xff326e64);
+        button(c, 90, h - 106, 210, 44, "GARDEN HOME", 0xfffbf3d7, 0xff326e64);
+    }
+
+    private void drawOverlay(Canvas c, float h, String title, String subtitle, String primary, String secondary) {
+        p.setColor(0x770f3e42); c.drawRect(0, 0, 390, h, p);
+        rounded(c, 35, h / 2 - 145, 320, 290, 28, 0xfffff6df);
+        centered(c, title, 29, 0xff205a5e, h / 2 - 84, true);
+        centered(c, subtitle, 15, 0xff52766b, h / 2 - 51, false);
+        button(c, 63, h / 2 - 10, 264, 56, primary, 0xfff39849, 0xffffffff);
+        button(c, 91, h / 2 + 62, 208, 48, secondary, 0xffe6efd8, 0xff326e64);
+    }
+
+    private void drawWorldPicker(Canvas c, float h) {
+        header(c, "CHOOSE A WORLD", h);
+        for (int i = 0; i < WORLD_NAMES.length; i++) {
+            float y = 210 + i * 142;
+            boolean unlocked = i == 0 || (i == 1 && data.bestMeters() >= 350) || (i == 2 && data.bestMeters() >= 1100);
+            int color = i == 0 ? 0xffb8ebdf : i == 1 ? 0xffffd2a7 : 0xffd5cff4;
+            rounded(c, 35, y, 320, 112, 23, color);
+            centered(c, WORLD_NAMES[i], 20, 0xff245b5d, y + 40, true);
+            centered(c, unlocked ? (selectedWorld == i ? "SELECTED  •  TAP TO PLAY" : "UNLOCKED  •  TAP TO SELECT") : "LOCKED  •  REACH " + (i == 1 ? "350" : "1,100") + " m", 12, 0xff4d746c, y + 72, false);
+        }
+        button(c, 85, h - 95, 220, 54, "BACK", 0xfffbf3d7, 0xff326e64);
+    }
+
+    private void drawWardrobe(Canvas c, float h) {
+        header(c, "LITTLE WARDROBE", h);
+        centered(c, "Seeds collected   ✦ " + data.seeds(), 15, 0xff316d68, 170, true);
+        drawBadge(c, 195, 263, 1.12f, data.outfit());
+        for (int i = 0; i < OUTFIT_NAMES.length; i++) {
+            int col = i % 2, row = i / 2;
+            float x = 35 + col * 164, y = 365 + row * 106;
+            rounded(c, x, y, 156, 83, 19, 0xfffff5dc);
+            p.setColor(OUTFIT_COLORS[i]); c.drawCircle(x + 30, y + 30, 15, p);
+            centered(c, OUTFIT_NAMES[i], 14, 0xff245b5d, y + 34, true);
+            String action = data.outfit() == i ? "EQUIPPED" : data.ownsOutfit(i) ? "WEAR" : (i * 35) + " SEEDS";
+            centered(c, action, 10, 0xff52766b, y + 61, false);
+        }
+        button(c, 85, h - 95, 220, 54, "BACK", 0xfffbf3d7, 0xff326e64);
+    }
+
+    private void drawSettings(Canvas c, float h) {
+        header(c, "SETTINGS", h);
+        button(c, 42, 190, 306, 62, "SOUND  " + (data.soundOn() ? "ON" : "OFF"), 0xfffbf3d7, 0xff326e64);
+        button(c, 42, 270, 306, 62, "HAPTICS  " + (data.hapticsOn() ? "ON" : "OFF"), 0xfffbf3d7, 0xff326e64);
+        button(c, 42, 350, 306, 62, "HOW TO PLAY", 0xfffbf3d7, 0xff326e64);
+        button(c, 42, 430, 306, 62, "PRIVACY", 0xfffbf3d7, 0xff326e64);
+        centered(c, "No account needed. Your garden stays on this device.", 12, 0xff52766b, 518, false);
+        button(c, 85, h - 95, 220, 54, "BACK", 0xfffbf3d7, 0xff326e64);
     }
 
     private void drawShop(Canvas c, float h) {
@@ -417,4 +616,3 @@ final class GameView extends View {
         Entity(int lane, int type, float depth) { this.lane = lane; this.type = type; this.depth = depth; }
     }
 }
-
