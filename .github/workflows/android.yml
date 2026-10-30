@@ -63,6 +63,14 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:connectedDebugAndroidTest
+      - name: Print Android test failure details
+        if: always()
+        run: |
+          for report in apps/star-sprout-sprint/app/build/outputs/androidTest-results/connected/**/*.xml; do
+            [ -f "$report" ] || continue
+            echo "===== $report ====="
+            cat "$report"
+          done
       - name: Save build outputs and test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -74,3 +82,4 @@ jobs:
             apps/star-sprout-sprint/app/build/reports/tests/testDebugUnitTest/**
             apps/star-sprout-sprint/app/build/reports/androidTests/connected/**
           if-no-files-found: warn
+
