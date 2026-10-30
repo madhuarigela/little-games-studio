@@ -38,3 +38,9 @@ Add each finding with date, severity (P0–P3), reproducible steps, expected/act
 - **Changes:** Custom screen-reader actions for home, run, pause, results, world/outfit selection, and settings; dynamic screen descriptions; system haptics with an in-game toggle; Back now invalidates static screens correctly.
 - **Self-review:** No new permission or network behavior. Haptics can be disabled. Canvas control hit targets still require physical-device measurements and TalkBack verification.
 - **Verification:** Pending CI after commit.
+
+## 2026-10-30 — accessibility instrumentation failed
+- **Run:** 41033725237. Unit suite and artifact build passed; emulator instrumentation failed.
+- **Details:** Gradle reports failing tests at `app/build/reports/androidTests/connected/debug/index.html`, but the current workflow skipped artifact upload after failure, so the exact assertion is NOT VERIFIED.
+- **Mitigation:** Make test report upload run unconditionally and tolerate missing report paths for diagnostic runs.
+- **Verification:** Pending new diagnostic CI run.

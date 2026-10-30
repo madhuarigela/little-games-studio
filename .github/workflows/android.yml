@@ -64,6 +64,7 @@ jobs:
           disable-animations: true
           script: ./apps/star-sprout-sprint/gradlew -p apps/star-sprout-sprint --no-daemon :app:connectedDebugAndroidTest
       - name: Save build outputs and test reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: star-sprout-sprint-build
@@ -72,4 +73,4 @@ jobs:
             apps/star-sprout-sprint/app/build/outputs/bundle/release/*.aab
             apps/star-sprout-sprint/app/build/reports/tests/testDebugUnitTest/**
             apps/star-sprout-sprint/app/build/reports/androidTests/connected/**
-          if-no-files-found: error
+          if-no-files-found: warn
