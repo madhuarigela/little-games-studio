@@ -42,8 +42,8 @@ final class AdsManager {
     }
 
     private boolean isConfigured() {
-        return !BuildConfig.ADMOB_REWARDED_UNIT_ID.startsWith("ca-app-pub-0000000000000000/")
-                && !BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID.startsWith("ca-app-pub-0000000000000000/");
+        return MonetizationConfig.isReady(BuildConfig.ADMOB_APP_ID,
+                BuildConfig.ADMOB_REWARDED_UNIT_ID, BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID);
     }
 
     private void initializeIfAllowed() {
