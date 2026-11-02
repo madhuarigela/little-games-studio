@@ -68,7 +68,8 @@ public class MainActivity extends Activity {
                     else drawPiece(c,a);
                 }
                 for(Slash s:slashes){p.setColor(Color.argb(180,125,245,255));p.setStrokeWidth(7);c.drawLine(s.x1,s.y1,s.x2,s.y2,p);}
-                slashes.removeIf(s->now-s.time>120);
+                Iterator<Slash> slashIterator=slashes.iterator();
+                while(slashIterator.hasNext()){ if(now-slashIterator.next().time>120) slashIterator.remove(); }
                 drawHud(c,w,remain);
             } else if(!started) {
                 text(c,"SLICE",w/2,h*.25f,72,Color.WHITE,true);
@@ -95,7 +96,9 @@ public class MainActivity extends Activity {
         }
         void drawHud(Canvas c,float w,long remain){
             text(c,"SCORE  "+score,28,48,18,Color.WHITE,false);
-            text(c,"♥  ".repeat(Math.max(0,lives)),w-35,48,18,Color.rgb(255,111,135),true);
+            String hearts="";
+            for(int i=0;i<Math.max(0,lives);i++) hearts+="♥ ";
+            text(c,hearts,w-35,48,18,Color.rgb(255,111,135),true);
             text(c,String.format(java.util.Locale.US,"%02d",Math.max(0,remain/1000)),w/2,65,26,Color.rgb(122,225,255),true);
             text(c,"PAUSE",w-48,95,12,Color.rgb(180,198,235),true);
         }
