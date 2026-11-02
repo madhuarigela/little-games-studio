@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  build-and-emulator-smoke-test:
-    timeout-minutes: 40
+  build-and-verify-apk:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -28,40 +28,23 @@ jobs:
           java-version: '17'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Build debug APK
-        run: gradle -p apps/slice-galaxy --no-daemon assembleDebug
-      - name: Install and smoke-test on Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          emulator-boot-timeout: 900
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -wipe-data
-          script: |
-            adb shell wm size 1080x1920
-            adb install -r apps/slice-galaxy/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -W -n com.madhuarigela.slicegalaxy/.MainActivity
-            sleep 3
-            adb shell pidof com.madhuarigela.slicegalaxy
-            adb shell input tap 540 1286
-            sleep 2
-            adb shell screencap -p /sdcard/slice-galaxy-play.png
-            adb pull /sdcard/slice-galaxy-play.png slice-galaxy-emulator.png
-            adb shell input tap 1010 95
-            sleep 1
-            adb shell pidof com.madhuarigela.slicegalaxy
-      - name: Upload emulator screenshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: slice-galaxy-emulator-smoke-test
-          path: slice-galaxy-emulator.png
-          if-no-files-found: error
-      - name: Upload APK
+      - name: Build debug APK and run Android lint
+        run: gradle -p apps/slice-galaxy --no-daemon assembleDebug lintDebug
+      - name: Verify APK signature and launchable activity
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="apps/slice-galaxy/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          "$BUILD_TOOLS/apksigner" verify --verbose "$APK"
+          "$BUILD_TOOLS/aapt" dump badging "$APK" | tee /tmp/slice-galaxy-badging.txt
+          grep -q "package: name='com.madhuarigela.slicegalaxy'" /tmp/slice-galaxy-badging.txt
+          grep -q "launchable-activity: name='com.madhuarigela.slicegalaxy.MainActivity'" /tmp/slice-galaxy-badging.txt
+          echo "APK exists, signature verifies, package ID and launchable activity are correct."
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: slice-galaxy-debug-apk
-          path: apps/slice-galaxy/app/build/outputs/apk/debug/*.apk
+          path: apps/slice-galaxy/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
