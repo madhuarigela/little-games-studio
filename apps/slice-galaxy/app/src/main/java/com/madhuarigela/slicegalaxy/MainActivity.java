@@ -31,13 +31,13 @@ public class MainActivity extends Activity {
         final ArrayList<Piece> pieces = new ArrayList<>();
         final ArrayList<Slash> slashes = new ArrayList<>();
         final int[] fruitColors = {Color.rgb(255,91,105), Color.rgb(255,184,64), Color.rgb(101,220,147), Color.rgb(107,177,255), Color.rgb(197,132,255)};
-        long lastFrame, lastSpawn, startTime, lastSwipe;
+        long lastFrame, lastSpawn, startTime, lastSwipe, pauseStartedAt;
         int score = 0, lives = 3, best = 0;
         boolean started = false, ended = false, paused = false;
         float fingerX, fingerY;
         final Runnable ticker = new Runnable() { public void run() { invalidate(); handler.postDelayed(this, 16); } };
 
-        GameView(Context c) { super(c); setLayerType(View.LAYER_TYPE_SOFTWARE, null); handler.post(ticker); setFocusable(true); }
+        GameView(Context c) { super(c); best=c.getSharedPreferences("slice_galaxy", Context.MODE_PRIVATE).getInt("best", 0); setContentDescription("Slice Galaxy arcade game. Swipe across fruit to score points and avoid bombs."); setLayerType(View.LAYER_TYPE_SOFTWARE, null); handler.post(ticker); setFocusable(true); }
         void startGame() { pieces.clear(); slashes.clear(); score=0; lives=3; started=true; ended=false; paused=false; startTime=System.currentTimeMillis(); lastFrame=startTime; lastSpawn=startTime; invalidate(); }
         void spawn() {
             float w=getWidth(), h=getHeight();
@@ -60,11 +60,11 @@ public class MainActivity extends Activity {
                 float dt=Math.min(0.035f,(now-lastFrame)/1000f); lastFrame=now;
                 if(now-lastSpawn>650){ spawn(); if(random.nextFloat()<.25f) spawn(); lastSpawn=now; }
                 long remain=60000-(now-startTime);
-                if(remain<=0){ended=true;best=Math.max(best,score);}
+                if(remain<=0){finishRound();}
                 Iterator<Piece> it=pieces.iterator();
                 while(it.hasNext()){
                     Piece a=it.next(); a.x+=a.vx*dt*60; a.y+=a.vy*dt*60; a.vy+=0.075f*dt*60;
-                    if(a.y>h+100){ if(!a.bomb) lives--; it.remove(); if(lives<=0){ended=true;best=Math.max(best,score);} }
+                    if(a.y>h+100){ if(!a.bomb) lives--; it.remove(); if(lives<=0){finishRound();} }
                     else drawPiece(c,a);
                 }
                 for(Slash s:slashes){p.setColor(Color.argb(180,125,245,255));p.setStrokeWidth(7);c.drawLine(s.x1,s.y1,s.x2,s.y2,p);}
@@ -115,12 +115,13 @@ public class MainActivity extends Activity {
             if(e.getAction()==MotionEvent.ACTION_UP){
                 float w=getWidth(),h=getHeight();
                 if(!started || ended){startGame();return true;}
-                if(paused){if(y>h*.62f)startGame();else paused=false;invalidate();return true;}
-                if(y<125 && x>w*.72f){paused=true;invalidate();return true;}
+                if(paused){if(y>h*.62f)startGame();else {startTime+=System.currentTimeMillis()-pauseStartedAt; paused=false; lastFrame=System.currentTimeMillis();} invalidate();return true;}
+                if(y<125 && x>w*.72f){paused=true;pauseStartedAt=System.currentTimeMillis();invalidate();return true;}
                 cut(fingerX,fingerY,x,y);return true;
             }
             return true;
         }
+        void finishRound(){ ended=true; best=Math.max(best,score); getContext().getSharedPreferences("slice_galaxy", Context.MODE_PRIVATE).edit().putInt("best",best).apply(); }
         void cut(float x1,float y1,float x2,float y2){
             long now=System.currentTimeMillis();
             slashes.add(new Slash(x1,y1,x2,y2,now));
@@ -128,7 +129,7 @@ public class MainActivity extends Activity {
             while(it.hasNext()){
                 Piece a=it.next();
                 if(distance(a.x,a.y,x1,y1,x2,y2)<a.r+13){
-                    if(a.bomb){lives=0;ended=true;best=Math.max(best,score);}
+                    if(a.bomb){lives=0;finishRound();}
                     else {score+=10+(now-lastSwipe<500?5:0);lastSwipe=now;}
                     it.remove();
                 }
@@ -140,6 +141,7 @@ public class MainActivity extends Activity {
             float t=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/(dx*dx+dy*dy)));
             return (float)Math.hypot(px-(x1+t*dx),py-(y1+t*dy));
         }
+        @Override protected void onWindowVisibilityChanged(int visibility){super.onWindowVisibilityChanged(visibility); if(visibility!=View.VISIBLE && started && !ended && !paused){paused=true;pauseStartedAt=System.currentTimeMillis();} else if(visibility==View.VISIBLE && paused && pauseStartedAt>0){startTime+=System.currentTimeMillis()-pauseStartedAt;pauseStartedAt=0;paused=false;lastFrame=System.currentTimeMillis();}}
         @Override protected void onDetachedFromWindow(){handler.removeCallbacks(ticker);super.onDetachedFromWindow();}
         static class Piece {float x,y,r,vx,vy;int color;boolean bomb;Piece(float x,float y,float r,int color,boolean bomb,float vx,float vy){this.x=x;this.y=y;this.r=r;this.color=color;this.bomb=bomb;this.vx=vx;this.vy=vy;}}
         static class Slash {float x1,y1,x2,y2;long time;Slash(float a,float b,float c,float d,long t){x1=a;y1=b;x2=c;y2=d;time=t;}}
