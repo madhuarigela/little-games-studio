@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    timeout-minutes: 25
+  build-and-emulator-smoke-test:
+    timeout-minutes: 40
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -30,6 +30,33 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Build debug APK
         run: gradle -p apps/slice-galaxy --no-daemon assembleDebug
+      - name: Install and smoke-test on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: |
+            adb shell wm size 1080x1920
+            adb install -r apps/slice-galaxy/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -W -n com.madhuarigela.slicegalaxy/.MainActivity
+            sleep 3
+            adb shell pidof com.madhuarigela.slicegalaxy
+            adb shell input tap 540 1286
+            sleep 2
+            adb shell screencap -p /sdcard/slice-galaxy-play.png
+            adb pull /sdcard/slice-galaxy-play.png slice-galaxy-emulator.png
+            adb shell input tap 1010 95
+            sleep 1
+            adb shell pidof com.madhuarigela.slicegalaxy
+      - name: Upload emulator screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: slice-galaxy-emulator-smoke-test
+          path: slice-galaxy-emulator.png
+          if-no-files-found: error
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
