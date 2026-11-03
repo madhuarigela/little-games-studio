@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
         GameView(Context c) { super(c); density=getResources().getDisplayMetrics().density; best=c.getSharedPreferences("slice_galaxy", Context.MODE_PRIVATE).getInt("best", 0); setContentDescription("Slice Galaxy arcade game. Swipe across fruit to score points and avoid bombs."); setLayerType(View.LAYER_TYPE_SOFTWARE, null); handler.post(ticker); setFocusable(true); }
         void startGame() { pieces.clear(); slashes.clear(); score=0; lives=3; started=true; ended=false; paused=false; startTime=System.currentTimeMillis(); lastFrame=startTime; lastSpawn=startTime; lastSwipe=0; backgroundPaused=false; invalidate(); }
         void spawn() {
-            float w=getWidth(), h=getHeight();
+            float w=getWidth()/density, h=getHeight()/density;
             boolean bomb=random.nextFloat()<0.16f;
             float r=Math.min(w,h)*0.045f;
             float x=r+random.nextFloat()*(w-2*r);
