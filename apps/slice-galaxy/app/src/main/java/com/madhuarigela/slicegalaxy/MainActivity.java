@@ -33,12 +33,13 @@ public class MainActivity extends Activity {
         final int[] fruitColors = {Color.rgb(255,91,105), Color.rgb(255,184,64), Color.rgb(101,220,147), Color.rgb(107,177,255), Color.rgb(197,132,255)};
         long lastFrame, lastSpawn, startTime, lastSwipe, pauseStartedAt;
         int score = 0, lives = 3, best = 0;
-        boolean started = false, ended = false, paused = false;
+        boolean started = false, ended = false, paused = false, backgroundPaused = false;
+        final float density;
         float fingerX, fingerY;
         final Runnable ticker = new Runnable() { public void run() { invalidate(); handler.postDelayed(this, 16); } };
 
-        GameView(Context c) { super(c); best=c.getSharedPreferences("slice_galaxy", Context.MODE_PRIVATE).getInt("best", 0); setContentDescription("Slice Galaxy arcade game. Swipe across fruit to score points and avoid bombs."); setLayerType(View.LAYER_TYPE_SOFTWARE, null); handler.post(ticker); setFocusable(true); }
-        void startGame() { pieces.clear(); slashes.clear(); score=0; lives=3; started=true; ended=false; paused=false; startTime=System.currentTimeMillis(); lastFrame=startTime; lastSpawn=startTime; invalidate(); }
+        GameView(Context c) { super(c); density=getResources().getDisplayMetrics().density; best=c.getSharedPreferences("slice_galaxy", Context.MODE_PRIVATE).getInt("best", 0); setContentDescription("Slice Galaxy arcade game. Swipe across fruit to score points and avoid bombs."); setLayerType(View.LAYER_TYPE_SOFTWARE, null); handler.post(ticker); setFocusable(true); }
+        void startGame() { pieces.clear(); slashes.clear(); score=0; lives=3; started=true; ended=false; paused=false; startTime=System.currentTimeMillis(); lastFrame=startTime; lastSpawn=startTime; lastSwipe=0; backgroundPaused=false; invalidate(); }
         void spawn() {
             float w=getWidth(), h=getHeight();
             boolean bomb=random.nextFloat()<0.16f;
@@ -49,7 +50,8 @@ public class MainActivity extends Activity {
         @Override protected void onDraw(Canvas c) {
             super.onDraw(c);
             long now=System.currentTimeMillis();
-            float w=getWidth(),h=getHeight();
+            c.save(); c.scale(density,density);
+            float w=getWidth()/density,h=getHeight()/density;
             c.drawColor(Color.rgb(9,13,35));
             p.setShader(new android.graphics.LinearGradient(0,0,w,h,Color.rgb(18,29,67),Color.rgb(10,13,38),android.graphics.Shader.TileMode.CLAMP));
             c.drawRect(0,0,w,h,p); p.setShader(null);
@@ -88,6 +90,7 @@ public class MainActivity extends Activity {
                 button(c,w/2,h*.66f,"PLAY AGAIN");
                 text(c,"GOOD CUTS. TRY FOR A HIGHER SCORE.",w/2,h*.76f,12,Color.rgb(139,155,195),false);
             }
+            c.restore();
         }
         void drawPiece(Canvas c, Piece a){
             p.setColor(a.color); p.setStyle(Paint.Style.FILL); c.drawCircle(a.x,a.y,a.r,p);
@@ -110,7 +113,7 @@ public class MainActivity extends Activity {
             text(c,label,x,y+7,18,Color.rgb(8,35,43),true);
         }
         @Override public boolean onTouchEvent(MotionEvent e){
-            float x=e.getX(),y=e.getY();
+            float x=e.getX()/density,y=e.getY()/density;
             if(e.getAction()==MotionEvent.ACTION_DOWN){fingerX=x;fingerY=y;return true;}
             if(e.getAction()==MotionEvent.ACTION_MOVE && started && !ended && !paused){
                 if(Math.hypot(x-fingerX,y-fingerY)>14){cut(fingerX,fingerY,x,y);fingerX=x;fingerY=y;} return true;
@@ -144,7 +147,7 @@ public class MainActivity extends Activity {
             float t=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/(dx*dx+dy*dy)));
             return (float)Math.hypot(px-(x1+t*dx),py-(y1+t*dy));
         }
-        @Override protected void onWindowVisibilityChanged(int visibility){super.onWindowVisibilityChanged(visibility); if(visibility!=View.VISIBLE && started && !ended && !paused){paused=true;pauseStartedAt=System.currentTimeMillis();} else if(visibility==View.VISIBLE && paused && pauseStartedAt>0){startTime+=System.currentTimeMillis()-pauseStartedAt;pauseStartedAt=0;paused=false;lastFrame=System.currentTimeMillis();}}
+        @Override protected void onWindowVisibilityChanged(int visibility){super.onWindowVisibilityChanged(visibility); if(visibility!=View.VISIBLE && started && !ended && !paused){paused=true;backgroundPaused=true;pauseStartedAt=System.currentTimeMillis();} else if(visibility==View.VISIBLE && paused && backgroundPaused && pauseStartedAt>0){startTime+=System.currentTimeMillis()-pauseStartedAt;pauseStartedAt=0;paused=false;backgroundPaused=false;lastFrame=System.currentTimeMillis();}}
         @Override protected void onDetachedFromWindow(){handler.removeCallbacks(ticker);super.onDetachedFromWindow();}
         static class Piece {float x,y,r,vx,vy;int color;boolean bomb;Piece(float x,float y,float r,int color,boolean bomb,float vx,float vy){this.x=x;this.y=y;this.r=r;this.color=color;this.bomb=bomb;this.vx=vx;this.vy=vy;}}
         static class Slash {float x1,y1,x2,y2;long time;Slash(float a,float b,float c,float d,long t){x1=a;y1=b;x2=c;y2=d;time=t;}}
